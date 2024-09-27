@@ -109,6 +109,9 @@ def main():
     results = {}
 
     def _get_ips_if_relevant(dom: str, wildcard_filter: bool = True) -> (dict, None):
+        if dom in results:
+            return
+
         exists, ips = dns_lookup(dom)
         if not exists:
             return
@@ -135,6 +138,7 @@ def main():
                         results[d] = {'ip': ips2, 'ptr': ptrs2}
 
     def _lookup(dom: str):
+        dom = dom.lower()
         if dom.endswith('.'):
             dom = dom[:-1]
 

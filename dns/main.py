@@ -21,6 +21,15 @@ TARGET = argv[1]
 TARGET_BASE = TARGET.rsplit('.', 1)[0]
 
 
+def subdomain(sub: str) -> str:
+    return f'{sub.strip()}.{TARGET}'
+
+
+def allow_follow(dom: str) -> bool:
+    return FOLLOW_OTHER or \
+        dom.find(TARGET_BASE) != -1  # allow follow to related domains
+
+
 class DNSRecon:
     def __init__(self):
         self.lock = Lock()
@@ -40,7 +49,6 @@ class DNSRecon:
         except KeyboardInterrupt:
             print()
             print('WARNING: SCAN INTERRUPTED')
-            pass
 
         self._save_results()
         print('DONE')
@@ -48,10 +56,10 @@ class DNSRecon:
     def _save_results(self):
         print('SAVING INFORMATION')
 
-        with open(f'whois_{TARGET}.json', 'w', encoding='utf-8') as f:
+        with open(f'{BASE_DIR}/out/whois_{TARGET}.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(whois(TARGET), indent=4, default=str))
 
-        with open(f'results_{TARGET}.json', 'w', encoding='utf-8') as f:
+        with open(f'{BASE_DIR}/out/results_{TARGET}.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
 
     def _process_wordlist(self):
@@ -113,18 +121,18 @@ class DNSRecon:
             pass
 
         try:
-            self.results['__DMARC'] = [r.to_text() for r in self.dns.resolve(self._subdomain('_dmarc'), 'TXT')]
+            self.results['__DMARC'] = [r.to_text() for r in self.dns.resolve(subdomain('_dmarc'), 'TXT')]
 
         except (NoAnswer, NXDOMAIN):
             pass
 
     def _check_for_wildcard(self):
-        wildcard_exists, wildcard_ips = self._name_lookup(self._subdomain(WILDCARD_RANDOM))
+        wildcard_exists, wildcard_ips = self._name_lookup(subdomain(WILDCARD_RANDOM))
         print('HAS WILDCARD:', wildcard_exists)
         if wildcard_exists:
             wildcard_ptrs = self._ptr_lookup_ips(wildcard_ips)
-            self.results[self._subdomain('*')] = {'ip': wildcard_ips, 'ptr': wildcard_ptrs}
-            self._check_ptrs(wildcard_ptrs, self._subdomain('*'))
+            self.results[subdomain('*')] = {'ip': wildcard_ips, 'ptr': wildcard_ptrs}
+            self._check_ptrs(wildcard_ptrs, subdomain('*'))
 
             print('WARNING: We will ignore all records that match the wildcard. Some generic ones might be missing!')
             print()
@@ -191,15 +199,6 @@ class DNSRecon:
         }
 
 
-    @staticmethod
-    def _subdomain(sub: str) -> str:
-        return f'{sub.strip()}.{TARGET}'
-
-    @staticmethod
-    def _allow_follow(dom: str) -> bool:
-        return FOLLOW_OTHER or \
-            dom.find(TARGET_BASE) != -1  # allow follow to related domains
-
     def _parse_spf(self, txt_entries: list[str]) -> list:
         for e in txt_entries:
             if e.find('v=spf1') != -1:
@@ -220,7 +219,7 @@ class DNSRecon:
 
                     elif pk in ['include', 'redirect']:
                         # recurse if we should follow the lead
-                        if not self._allow_follow(pv):
+                        if not allow_follow(pv):
                             continue
 
                         try:
@@ -254,7 +253,7 @@ class DNSRecon:
         for ipp in ['ip4', 'ip6']:
             for d in ptrs[ipp]:
                 d = d[:-1]
-                if d != ptr_domain and self._allow_follow(d) and d not in self.results:
+                if d != ptr_domain and allow_follow(d) and d not in self.results:
                     ips2 = self._get_ips_if_relevant(d, False)
                     if ips2 is None:
                         continue
@@ -284,7 +283,7 @@ class DNSRecon:
         self._check_ptrs(ptrs, dom)
 
     def _lookup_sub(self, word: str):
-        self._lookup(self._subdomain(word))
+        self._lookup(subdomain(word))
 
 
 if __name__ == '__main__':

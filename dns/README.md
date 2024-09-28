@@ -22,10 +22,10 @@ Filter results using `jq`:
 cat results_<DOMAIN>.json | jq 'keys | .[]'
 
 # get all unique IPv4 addresses
-cat results_<DOMAIN>.json | jq -r '.[] | .ip | .ip4 | .[]' | uniq
+cat results_<DOMAIN>.json | jq -r '.[] | .ip | .ip4 | .[]' | sort | uniq
 
 # get all IPv4 PTRs
-cat results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | uniq
+cat results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uniq
 ```
 
 ----

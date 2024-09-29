@@ -50,7 +50,7 @@ cat web_crawler/out/results_<TARGET>.json | jq -r '.[] | .contact | .[]' |  sort
 
 Note: Make sure the browser console is roughly this size - it might differ in your case:
 
-<img src="https://raw.githubusercontent.com/O-X-L/offsec-recon/refs/heads/main/web_crawler/browser_console.webp" width="600">
+<img src="https://raw.githubusercontent.com/O-X-L/offsec-recon/refs/heads/main/web_crawler/browser_console.webp" width="100%">
 
 ----
 

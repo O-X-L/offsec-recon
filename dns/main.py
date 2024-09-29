@@ -180,7 +180,18 @@ class DNSRecon:
 
         for ip in ips:
             try:
-                ptrs.extend([p.to_text() for p in self.dns.resolve_address(ip)])
+                retry = 0
+                while True:
+                    try:
+                        ptrs.extend([p.to_text() for p in self.dns.resolve_address(ip)])
+                        break
+
+                    except (LifetimeTimeout, NoNameservers):
+                        if retry >= 5:
+                            raise NXDOMAIN
+
+                        retry += 1
+                        continue
 
             except (NoAnswer, NXDOMAIN, DNSSyntaxError):
                 continue

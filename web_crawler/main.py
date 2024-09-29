@@ -39,7 +39,7 @@ LINK_PART_NO_FOLLOW = [
 BASE_DIR = Path(__file__).parent.resolve()
 
 
-def safe_url(url: str) -> str:
+def safe_url_key(url: str) -> str:
     url = url.replace('http://', '').replace('https://', '')
     if url.endswith('/'):
         url = url[:-1]
@@ -97,7 +97,7 @@ class WebCrawlerRecon:
     def _save_results(self):
         print('SAVING INFORMATION')
 
-        with open(f'{BASE_DIR}/out/results_{safe_url(TARGET)}.json', 'w', encoding='utf-8') as f:
+        with open(f'{BASE_DIR}/out/results_{safe_url_key(TARGET)}.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
 
     @staticmethod
@@ -108,7 +108,7 @@ class WebCrawlerRecon:
         sleep(1)
 
     def download_website(self, url: str):
-        surl = safe_url(url)
+        surl = safe_url_key(url)
         if surl in self.results or url.find('<html') != -1:
             return
 
@@ -155,7 +155,7 @@ class WebCrawlerRecon:
     def analyze_website(self, url: str, depth: int = 0):
         # pylint: disable=R0912,R0915
         domain = url_domain(url)
-        surl = safe_url(url)
+        surl = safe_url_key(url)
 
         if surl in self.results or url.find('<html') != -1:
             return
@@ -272,7 +272,7 @@ if __name__ == '__main__':
     elif len(args.skip.strip()) > 0:
         LINK_PART_NO_FOLLOW.append(args.skip)
 
-    CACHE_DIR = f'{BASE_DIR}/cache/{safe_url(TARGET)}'
+    CACHE_DIR = f'{BASE_DIR}/cache/{safe_url_key(TARGET)}'
     MAX_RECURSION = args.recursion_depth
     PAGE_LOAD_WAIT = args.load_time
 

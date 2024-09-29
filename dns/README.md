@@ -9,23 +9,35 @@ The included wordlist was copied from: [theMiddleBlue/DNSenum](https://github.co
 Requirements: `pip install -r requirements.txt`
 
 ```bash
-python3 main.py <DOMAIN>
+python3 dns/main.py -h
+> usage: main.py [-h] -t TARGET [-f FOLLOW] [-p THREADS] [-w WORDLIST]
+> 
+> options:
+>   -h, --help            show this help message and exit
+>   -t TARGET, --target TARGET
+>                         Target domain or URL to scan
+>   -f FOLLOW, --follow FOLLOW
+>                         Recursively follow unrelated domains
+>   -p THREADS, --threads THREADS
+>                         Parallel threads to use
+>   -w WORDLIST, --wordlist WORDLIST
+>                         Wordlist to use
 
 # example:
-python3 main.py google.com
+python3 dns/main.py google.com
 ```
 
 Filter results using `jq`:
 
 ```bash
 # get a simple list of all domains
-cat results_<DOMAIN>.json | jq 'keys | .[]'
+cat dns/out/results_<DOMAIN>.json | jq 'keys | .[]'
 
 # get all unique IPv4 addresses
-cat results_<DOMAIN>.json | jq -r '.[] | .ip | .ip4 | .[]' | sort | uniq
+cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ip | .ip4 | .[]' | sort | uniq
 
 # get all IPv4 PTRs
-cat results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uniq
+cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uniq
 ```
 
 ----

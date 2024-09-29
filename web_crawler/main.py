@@ -1,29 +1,41 @@
 #!/usr/bin/env python3
 
-from sys import argv
 from time import sleep
 from subprocess import Popen as ProcessOpen
 from re import sub as regex_replace
 from re import findall as regex_find
 from json import dumps as json_dumps
 from pathlib import Path
+from argparse import ArgumentParser
 
 import pyautogui
 import pyperclip
+from validators import domain as valid_domain
 
 pyautogui.FAILSAFE = True
-pyautogui.PAUSE = 0.5
+pyautogui.PAUSE = 0.2
 
 CHROMIUM_BIN = 'chromium-browser'
 # NOTE: positions are optimized for full-hd screen
 URL_BAR = (pyautogui.size()[0] / 3, 80)
-CONSOLE_HTML = (1400, 170)
-CONSOLE_HTML_CUT = (1480, 350)
+CONSOLE_HTML = (1800, 155)
 
-LINK_IGNORE_EXT = ['css', 'js', 'woff', 'woff2', 'png', 'jpg', 'jpeg', 'webp']
-MAX_RECURSION = 3
-TARGET = argv[1]
-FOLLOW_ALLOW_OTHER_LIST = argv[2].split(',') if len(argv) > 2 else []
+LINK_STATICS_EXT = [
+    'css', 'js', 'json',
+    'png', 'jpg', 'jpeg', 'webp', 'ico', 'svg', 'gif',
+    'woff', 'woff2', 'tff',
+    'webmanifest',
+    'ics', 'vcf', 'pdf', 'docx',
+    'exe',
+]
+LINK_CONTACT_BEG = ['mailto:', 'tel:', 'callto:']
+LINK_IGNORE_BEG = ['javascript:', '#']
+LINK_PART_NO_FOLLOW = [
+    # non HTML content
+    'wp-content/', 'wp-json/', 'xmlrpc.php', ':+', '/feed/',
+    # social media
+    'facebook.com', '//x.com', 'twitter.com', 'instagram.com', 'xing.com', 'linkedin.com',
+]
 BASE_DIR = Path(__file__).parent.resolve()
 
 
@@ -56,20 +68,31 @@ def allow_follow(url: str) -> bool:
 class WebCrawlerRecon:
     def __init__(self):
         self.results = {}
+        cache_dir = Path(CACHE_DIR)
+        if not cache_dir.is_dir():
+            cache_dir.mkdir()
 
     def run(self):
-        with ProcessOpen([CHROMIUM_BIN, '--icognito', '--guest']):
+        with ProcessOpen(
+                f'{CHROMIUM_BIN} --icognito --guest --disable-popup-blocking=false '
+                f'--noerrdialogs --disable-infobars --disable-dev-shm-usage '
+                f'--no-first-run --no-default-browser-check --start-maximized >/dev/null 2>/dev/null',
+                shell=True,
+        ) as browser:
             self._init_browser()
             self.download_website(TARGET)
             try:
                 self.analyze_website(TARGET)
 
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, FileNotFoundError):
                 print()
                 print('WARNING: SCAN INTERRUPTED')
 
             self._save_results()
             print('DONE')
+
+            browser.terminate()
+            browser.kill()
 
     def _save_results(self):
         print('SAVING INFORMATION')
@@ -80,76 +103,176 @@ class WebCrawlerRecon:
     @staticmethod
     def _init_browser() :
         sleep(2)
-
-        input(
-            'WAITING for you to MAXIMIZE THE BROWSER WINDOW..\n'
-            'Press ENTER to continue\n'
-        )
-        # todo: was not able to hit the maximize button.. :(
-
         pyautogui.leftClick(URL_BAR[0], URL_BAR[1])  # get focus
         pyautogui.hotkey('f12')  # open dev console
+        sleep(1)
 
     def download_website(self, url: str):
         surl = safe_url(url)
-        if surl in self.results:
+        if surl in self.results or url.find('<html') != -1:
             return
 
-        print('DOWNLOAD:', url)
+        print('DL:', len(self.results), url)
         pyautogui.leftClick(URL_BAR[0], URL_BAR[1])
-        pyperclip.copy(url)
+
+        tries = 0
+        url_ok = False
+        while tries < 3 and not url_ok:
+            pyperclip.copy(url)
+            if pyperclip.paste().find('<html') == -1:
+                url_ok = True
+
+            tries += 1
+
+        if tries >= 3:
+            print('ERROR: Failed to copy-paste URL')
+            return
+
         pyautogui.hotkey('ctrl', 'v')
         pyautogui.typewrite(['enter'])
-        sleep(3)
-        pyautogui.rightClick(CONSOLE_HTML[0], CONSOLE_HTML[1])
-        pyautogui.leftClick(CONSOLE_HTML_CUT[0], CONSOLE_HTML_CUT[1])
+        sleep(PAGE_LOAD_WAIT)
+        pyautogui.leftClick(CONSOLE_HTML[0], CONSOLE_HTML[1])
+        pyautogui.typewrite(['down'])
 
-        with open(f'{BASE_DIR}/cache/website_{surl}.html', 'w', encoding='utf-8') as f:
+        tries = 0
+        while tries < 5 and not pyperclip.paste().startswith('<html') and not pyperclip.paste().startswith('<!--'):
+            pyautogui.hotkey('ctrl', 'c')
+            tries += 1
+
+        tries = 0
+        while tries < 10 and not pyperclip.paste().startswith('<html'):
+            pyautogui.typewrite(['down'])
+            pyautogui.hotkey('ctrl', 'c')
+            tries += 1
+
+        if pyperclip.paste().find('<title>New Tab</title>') != -1:
+            print('ERROR: Got BLANK TAB')
+            return
+
+        with open(f'{CACHE_DIR}/website_{surl}.html', 'w', encoding='utf-8') as f:
             f.write(pyperclip.paste())
 
     def analyze_website(self, url: str, depth: int = 0):
         domain = url_domain(url)
         surl = safe_url(url)
 
-        if surl in self.results:
+        if surl in self.results or url.find('<html') != -1:
             return
 
-        print('ANALYZE:', url)
-        with open(f'{BASE_DIR}/cache/website_{surl}.html', 'r', encoding='utf-8') as f:
+        print('AN:', len(self.results), url)
+        with open(f'{CACHE_DIR}/website_{surl}.html', 'r', encoding='utf-8') as f:
             min_html = f.read().replace('\n', '').replace(' ', '')
 
         links_unfiltered = regex_find(r'href="(.*?)"', min_html)
         links = []
+        statics = []
         domains = []
+        contact = []
         for l in links_unfiltered:
-            if l.startswith('mailto:') or l.startswith('tel:') or l.startswith('#'):
+            if l == '/' or l == '//':
                 continue
 
-            if l.find('://') == -1:
-                l = f'{domain}/{l}'
-
-            domains.append(url_domain(l))
+            if l.startswith('//'):
+                l = l[2:]
 
             skip = False
-            for ignore_ext in LINK_IGNORE_EXT:
-                if l.endswith(f'.{ignore_ext}'):
+            for b in LINK_IGNORE_BEG:
+                if l.find(b) != -1:
+                    skip = True
+                    break
+
+            for b in LINK_CONTACT_BEG:
+                if l.find(b) != -1:
+                    contact.append(l)
                     skip = True
                     break
 
             if skip:
                 continue
 
+            if l.find('://') == -1 and not valid_domain(l):
+                if l.startswith('/'):
+                    l = f'{domain}{l}'
+
+                else:
+                    l = f'{domain}/{l}'
+
+            skip = False
+            for e in LINK_STATICS_EXT:
+                if l.find(f'.{e}') != -1:
+                    domains.append(url_domain(l))
+                    statics.append(l)
+                    skip = True
+                    break
+
+            if skip:
+                continue
+
+            domains.append(url_domain(l))
             links.append(l)
 
-        self.results[surl] = {'urls': list(set(links)), 'domains': list(set(domains))}
+        links = list(set(links))
+        domains = list(set(domains))
+        statics = list(set(statics))
+        contact = list(set(contact))
+        links.sort()
+        domains.sort()
+        statics.sort()
+        contact.sort()
+
+        self.results[surl] = {
+            'urls': links,
+            'domains': domains,
+            'statics': statics,
+            'contact': contact,
+        }
 
         if depth < MAX_RECURSION:
             for l in links:
                 if allow_follow(l):
+                    skip = False
+                    for p in LINK_PART_NO_FOLLOW:
+                        if l.find(p) != -1:
+                            skip = True
+                            break
+
+                    if skip:
+                        continue
+
                     self.download_website(l)
                     self.analyze_website(l, depth=depth + 1)
 
 
 if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('-t', '--target', help='Target domain or URL to scan', required=True)
+    parser.add_argument('-f', '--follow', help='Domains or part of URLs to follow in recursive scan (comma-separated)', default='')
+    parser.add_argument('-l', '--load-time', help='Time in seconds you want to wait for each page to load', default=1.5, type=float)
+    parser.add_argument('-r', '--recursion-depth', help='Max depth of recursion', default=3, type=int)
+    parser.add_argument('-s', '--skip', help='Skip scan if a part of the url matches one of these (comma-separated)', default='', type=str)
+
+    args = parser.parse_args()
+
+    TARGET = args.target
     TARGET_BASE = url_domain(TARGET).rsplit('.', 1)[0]
+
+    if len(args.follow.strip()) == 0:
+        FOLLOW_ALLOW_OTHER_LIST = []
+
+    elif args.follow.find(',') != -1:
+        FOLLOW_ALLOW_OTHER_LIST = args.follow.split(',')
+
+    else:
+        FOLLOW_ALLOW_OTHER_LIST = [args.follow]
+
+    if args.skip.find(',') != -1:
+        LINK_PART_NO_FOLLOW.extend(args.skip.split(','))
+
+    elif len(args.skip.strip()) > 0:
+        LINK_PART_NO_FOLLOW.append(args.skip)
+
+    CACHE_DIR = f'{BASE_DIR}/cache/{safe_url(TARGET)}'
+    MAX_RECURSION = args.recursion_depth
+    PAGE_LOAD_WAIT = args.load_time
+
     WebCrawlerRecon().run()

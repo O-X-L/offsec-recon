@@ -153,6 +153,7 @@ class WebCrawlerRecon:
             f.write(pyperclip.paste())
 
     def analyze_website(self, url: str, depth: int = 0):
+        # pylint: disable=R0912,R0915
         domain = url_domain(url)
         surl = safe_url(url)
 
@@ -169,7 +170,7 @@ class WebCrawlerRecon:
         domains = []
         contact = []
         for l in links_unfiltered:
-            if l == '/' or l == '//':
+            if l in ('/', '//'):
                 continue
 
             if l.startswith('//'):

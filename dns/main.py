@@ -5,15 +5,15 @@ from threading import Thread, Lock
 from time import sleep, time
 from json import dumps as json_dumps
 from argparse import ArgumentParser
+from sys import exit as sys_exit
 
-from dns.resolver import Resolver, NoAnswer, NXDOMAIN, LifetimeTimeout, NoNameservers
-from dns.exception import SyntaxError
 from whois import whois
+from dns.resolver import Resolver, NoAnswer, NXDOMAIN, LifetimeTimeout, NoNameservers
+from dns.exception import SyntaxError as DNSSyntaxError
 
 BASE_DIR = Path(__file__).parent.resolve()
 
 NAMESERVERS = ['1.1.1.1']
-WILDCARD_RANDOM = 'ksdljfdlsnesfel3498394ßskeöskfölsjefk'
 
 
 def subdomain(sub: str) -> str:
@@ -87,7 +87,7 @@ class DNSRecon:
 
             threads_done = False
             while not threads_done:
-                threads_done = all([not t.is_alive() for t in threads])
+                threads_done = all(not t.is_alive() for t in threads)
                 sleep(0.05)
 
             batch += 1
@@ -98,7 +98,7 @@ class DNSRecon:
 
         except NXDOMAIN:
             print(f"ERROR: The domain '{TARGET}' is not resolvable! Check it for typos!")
-            exit(1)
+            sys_exit(1)
 
         try:
             self.results['__MX'] = [r.to_text() for r in self.dns.resolve(TARGET, 'MX')]
@@ -122,12 +122,13 @@ class DNSRecon:
             pass
 
     def _check_for_wildcard(self):
-        wildcard_exists, wildcard_ips = self._name_lookup(subdomain(WILDCARD_RANDOM))
+        ws = subdomain('*')
+        wildcard_exists, wildcard_ips = self._name_lookup(ws)
         print('HAS WILDCARD:', wildcard_exists)
         if wildcard_exists:
             wildcard_ptrs = self._ptr_lookup_ips(wildcard_ips)
-            self.results[subdomain('*')] = {'ip': wildcard_ips, 'ptr': wildcard_ptrs}
-            self._check_ptrs(wildcard_ptrs, subdomain('*'))
+            self.results[ws] = {'ip': wildcard_ips, 'ptr': wildcard_ptrs}
+            self._check_ptrs(wildcard_ptrs, ws)
 
             print('WARNING: We will ignore all records that match the wildcard. Some generic ones might be missing!')
             print()
@@ -181,7 +182,7 @@ class DNSRecon:
             try:
                 ptrs.extend([p.to_text() for p in self.dns.resolve_address(ip)])
 
-            except (NoAnswer, NXDOMAIN, SyntaxError):
+            except (NoAnswer, NXDOMAIN, DNSSyntaxError):
                 continue
 
         return ptrs
@@ -231,15 +232,15 @@ class DNSRecon:
 
     def _get_ips_if_relevant(self, dom: str, wildcard_filter: bool = True) -> (dict, None):
         if dom in self.results:
-            return
+            return None
 
         exists, ips = self._name_lookup(dom)
         if not exists:
-            return
+            return None
 
         if wildcard_filter and self.wildcard_exists and \
                 ips['ip4'] == self.wildcard_ips['ip4'] and ips['ip6'] == self.wildcard_ips['ip6']:
-            return
+            return None
 
         return ips
 

@@ -32,6 +32,8 @@ python3 web_crawler/main.py -h
 python3 web_crawler/main.py -t oxl.at
 ```
 
+You might need to increase the `--load-time` if the website is on the slower side and download/copy-from-console does not work correctly.
+
 Filter results using `jq`:
 
 ```bash

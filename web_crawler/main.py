@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Source: https://github.com/O-X-L/offsec-recon
+# Copyright (C) 2024 Rath Pascal
+# License: GPLv3
+
 from time import sleep
 from subprocess import Popen as ProcessOpen
 from re import sub as regex_replace
@@ -34,7 +38,8 @@ LINK_PART_NO_FOLLOW = [
     # non HTML content
     'wp-content/', 'wp-json/', 'xmlrpc.php', ':+', '/feed/',
     # social media
-    'facebook.com', '//x.com', 'twitter.com', 'instagram.com', 'xing.com', 'linkedin.com',
+    'facebook.com', '//x.com', 'twitter.com', 'instagram.com', 'xing.com', 'linkedin.com', 'pinterest.com',
+    'youtube.com', 'youtu.be', 'www.amazon.de',
 ]
 BASE_DIR = Path(__file__).parent.resolve()
 
@@ -248,7 +253,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('-t', '--target', help='Target domain or URL to scan', required=True)
     parser.add_argument('-f', '--follow', help='Domains or part of URLs to follow in recursive scan (comma-separated)', default='')
-    parser.add_argument('-l', '--load-time', help='Time in seconds you want to wait for each page to load', default=1.5, type=float)
+    parser.add_argument('-l', '--load-time', help='Time in seconds you want to wait for each page to load', default=2.0, type=float)
     parser.add_argument('-r', '--recursion-depth', help='Max depth of recursion', default=3, type=int)
     parser.add_argument('-s', '--skip', help='Skip scan if a part of the url matches one of these (comma-separated)', default='', type=str)
 

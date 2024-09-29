@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Source: https://github.com/O-X-L/offsec-recon
+# Copyright (C) 2024 Rath Pascal
+# License: GPLv3
+
 from pathlib import Path
 from threading import Thread, Lock
 from time import sleep, time
@@ -51,11 +55,15 @@ class DNSRecon:
     def _save_results(self):
         print('SAVING INFORMATION')
 
-        with open(f'{BASE_DIR}/out/whois_{TARGET}.json', 'w', encoding='utf-8') as f:
-            f.write(json_dumps(whois(TARGET), indent=4, default=str))
-
         with open(f'{BASE_DIR}/out/results_{TARGET}.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
+
+        with open(f'{BASE_DIR}/out/whois_{TARGET}.json', 'w', encoding='utf-8') as f:
+            try:
+                f.write(json_dumps(whois(TARGET), indent=4, default=str))
+
+            except ConnectionResetError:
+                print('ERROR: Fetching Whois data')
 
     def _process_wordlist(self):
         print()

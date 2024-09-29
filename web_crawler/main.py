@@ -196,7 +196,7 @@ class WebCrawlerRecon:
             if skip:
                 continue
 
-            if l.find('://') == -1 and not valid_domain(l):
+            if l.find('://') == -1 and (not valid_domain(l) or l.endswith('.html')):
                 if l.startswith('/'):
                     l = f'{domain}{l}'
 

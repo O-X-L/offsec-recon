@@ -2,7 +2,9 @@
 
 We want to gather information about existing domains and the services behind them.
 
-This script will drive a Chromium browser to access the target website and recursively all linked ones that are related. We chose to use an actual browser as this is the most stable and quiet way around anti-bot measurements. But it is also pretty slow.
+This script drives a Chromium browser via PyAutoGUI to access the target website and recursively all linked ones that are related. We chose to use an actual browser as this is the most stable and quiet way around anti-bot measurements. But it is also pretty slow.
+
+If you need speed and/or don't care about being 'quiet' - search for another tool. Programmatically (*headless*) scraping/crawling websites is much more efficient!
 
 ## Usage
 

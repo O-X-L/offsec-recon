@@ -37,6 +37,7 @@ jobs:
           pip install -r requirements_lint.txt
           pip install -r dns/requirements.txt
           pip install -r web_crawler/requirements.txt
+          pip install -r ips/requirements.txt
         shell: bash
 
       - name: Running PyLint

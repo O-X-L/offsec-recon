@@ -76,6 +76,10 @@ Note: If the target domain has a wildcard-record set, the DNS-lookup checks migh
 
 ```json
 {
+    "oxl.at": {
+        "shodan_url": "https://www.shodan.io/search?query=hostname%3Aoxl.at",
+        "google_site": "https://www.google.com/search?q=site%3Aoxl.at"
+    },
     "*.oxl.at": {
         "ip": {
             "ip4": [

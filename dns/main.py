@@ -40,8 +40,13 @@ class DNSRecon:
         self.start_time = time()
 
     def run(self):
+        self.results[TARGET] = {
+            'shodan_url': f'https://www.shodan.io/search?query=hostname%3A{TARGET}',
+            'google_site': f'https://www.google.com/search?q=site%3A{TARGET}',
+        }
         self._process_basic_records()
         self.wildcard_exists, self.wildcard_ips = self._check_for_wildcard()
+
         try:
             self._process_wordlist()
 

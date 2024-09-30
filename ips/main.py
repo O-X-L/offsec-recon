@@ -76,7 +76,7 @@ class IPRecon:
         d = {
             'oxl_asn': data_oxl_asn,
             'ipinfo_url_ip': f"{IPINFO_URL}/{ip}",
-            'censys_url': f'https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=INCLUDE&q={ip}',
+            'censys_url': f'https://search.censys.io/hosts/{ip}',
         }
 
         if IPINFO_TOKEN != '':

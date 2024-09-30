@@ -47,6 +47,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/159.69.187.50",
+            "censys_url": "https://search.censys.io/hosts/159.69.187.50",
             "ipinfo": {
                 "ip": "159.69.187.50",
                 "hostname": "lb01.c.oxl.at",
@@ -65,6 +66,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/49.13.245.112",
+            "censys_url": "https://search.censys.io/hosts/49.13.245.112",
             "ipinfo": {
                 "ip": "49.13.245.112",
                 "hostname": "static.112.245.13.49.clients.your-server.de",
@@ -83,6 +85,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/49.13.245.113",
+            "censys_url": "https://search.censys.io/hosts/49.13.245.113",
             "ipinfo": {
                 "ip": "49.13.245.113",
                 "hostname": "static.113.245.13.49.clients.your-server.de",
@@ -101,6 +104,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/49.13.245.114",
+            "censys_url": "https://search.censys.io/hosts/49.13.245.114",
             "ipinfo": {
                 "ip": "49.13.245.114",
                 "hostname": "static.114.245.13.49.clients.your-server.de",
@@ -119,6 +123,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/49.13.245.115",
+            "censys_url": "https://search.censys.io/hosts/49.13.245.115",
             "ipinfo": {
                 "ip": "49.13.245.115",
                 "hostname": "d51d74.mail.host-svc.com",
@@ -139,6 +144,7 @@ Example:
                 "org": "Hetzner Online GmbH"
             },
             "ipinfo_url_ip": "https://ipinfo.io/2a01:4f8:c010:97b4::1",
+            "censys_url": "https://search.censys.io/hosts/2a01:4f8:c010:97b4::1",
             "ipinfo": {
                 "ip": "2a01:4f8:c010:97b4::1",
                 "city": "Falkenstein",

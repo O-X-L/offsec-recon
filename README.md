@@ -10,7 +10,7 @@ They are designed to be passive/quiet and utilize open-source information. (OSIN
 
 See: [README](https://github.com/O-X-L/offsec-recon/blob/main/dns/README.md)
 
-## IPS
+## IPs
 
 See: [README](https://github.com/O-X-L/offsec-recon/blob/main/ips/README.md)
 

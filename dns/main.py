@@ -42,6 +42,7 @@ class DNSRecon:
     def run(self):
         self.results[TARGET] = {
             'shodan_url': f'https://www.shodan.io/search?query=hostname%3A{TARGET}',
+            'censys_url': f'https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=INCLUDE&q={TARGET}',
             'google_site': f'https://www.google.com/search?q=site%3A{TARGET}',
         }
         self._process_basic_records()

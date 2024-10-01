@@ -13,7 +13,7 @@ This script utilizes the free [OXL ASN/ISP Database](https://github.com/O-X-L/ge
 First you have to create an IP-List file. It can contain IPs or subnets. IPv4 and IPv6 are supported.
 
 ```bash
-python3 ips/main.py -h
+python3 ip/main.py -h
 > usage: main.py [-h] [-i IPLIST] [-o OUT_NAME] [-t IPINFO_TOKEN] [-s SHODAN_KEY]
 > 
 > options:
@@ -27,7 +27,7 @@ python3 ips/main.py -h
 >   -s SHODAN_KEY, --shodan-key SHODAN_KEY
 >                         Shodan.io API key (paid => https://developer.shodan.io/api)
 
-python3 ips/main.py -i my-ips.txt -t xxxxxxxxxxxxxx
+python3 ip/main.py -i my-ips.txt -t xxxxxxxxxxxxxx
 ```
 
 Note: You might encounter issues with API rate-limits if you want to mass-lookup IPs.

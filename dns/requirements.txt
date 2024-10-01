@@ -1,2 +1,4 @@
 dnspython
 python-whois
+httpx
+validators

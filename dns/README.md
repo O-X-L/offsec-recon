@@ -1,8 +1,34 @@
-# DNS / Domain Recon
+# DNS / Domain Enumeration
 
 We want to gather information about existing domains and the services behind them.
 
 The included wordlist was copied from: [theMiddleBlue/DNSenum](https://github.com/theMiddleBlue/DNSenum) 
+
+----
+
+## How it works
+
+* All IPs we find will get their PTR's looked-up
+* Resolving the basic DNS records (NS, MX, DMARC, SPF)
+  * Parsing SPF
+* Pulling domains from [existing certificates](https://crt.sh)
+* Checking if a wildcard DNS record is set
+* Trying if domains from the provided wordlist can be resolved
+
+----
+
+## Other Tools
+
+Make sure to also use other tools:
+
+* [projectdiscovery/subfinder](https://github.com/projectdiscovery/subfinder)
+* [projectdiscovery/alterx](https://github.com/projectdiscovery/alterx) (*sub-domain list generator*)
+* [knock](https://github.com/guelfoweb/knock)
+* [dnsdumpster](https://github.com/nmmapper/dnsdumpster)
+
+Useful online services are linked in the output. (*see example below*)
+
+----
 
 ## Usage
 
@@ -79,7 +105,8 @@ Note: If the target domain has a wildcard-record set, the DNS-lookup checks migh
     "oxl.at": {
         "shodan_url": "https://www.shodan.io/search?query=hostname%3Aoxl.at",
         "censys_url": "https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=INCLUDE&q=oxl.at",
-        "google_site": "https://www.google.com/search?q=site%3Aoxl.at"
+        "google_site": "https://www.google.com/search?q=site%3Aoxl.at",
+        "cert_search_url": "https://crt.sh/?q=oxl.at"
     },
     "*.oxl.at": {
         "ip": {

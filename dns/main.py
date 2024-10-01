@@ -12,8 +12,10 @@ from argparse import ArgumentParser
 from sys import exit as sys_exit
 
 from whois import whois
+from httpx import request, ReadTimeout, ConnectTimeout
 from dns.resolver import Resolver, NoAnswer, NXDOMAIN, LifetimeTimeout, NoNameservers
 from dns.exception import SyntaxError as DNSSyntaxError
+from validators import domain as valid_domain
 
 BASE_DIR = Path(__file__).parent.resolve()
 
@@ -44,8 +46,11 @@ class DNSRecon:
             'shodan_url': f'https://www.shodan.io/search?query=hostname%3A{TARGET}',
             'censys_url': f'https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=INCLUDE&q={TARGET}',
             'google_site': f'https://www.google.com/search?q=site%3A{TARGET}',
+            'cert_search_url': f'https://crt.sh/?q={TARGET}',
+            'dnsdumpster_url': f'https://dnsdumpster.com/?q={TARGET}',
         }
         self._process_basic_records()
+        self._process_certificate_search()
         self.wildcard_exists, self.wildcard_ips = self._check_for_wildcard()
 
         try:
@@ -135,9 +140,36 @@ class DNSRecon:
         except (NoAnswer, NXDOMAIN):
             pass
 
+    def _process_certificate_search(self):
+        print()
+        print('PULLING DOMAINS FROM EXISTING CERTIFICATES')
+        domains = []
+
+        tries = 0
+        while True:
+            try:
+                certs = request(method='get', url=f'https://crt.sh/?q={TARGET}&output=json', timeout=10).json()
+                break
+
+            except (ReadTimeout, ConnectTimeout):
+                tries += 1
+                if tries >= 4:
+                    print('ERROR: Certificate information could not be downloaded!')
+                    return
+
+        for c in certs:
+            domains.extend(c['name_value'].split('\n'))
+            cn = c['common_name']
+            if valid_domain(cn):
+                domains.append(cn)
+
+        for d in set(domains):
+            self._lookup(d)
+
     def _check_for_wildcard(self):
         ws = subdomain('*')
         wildcard_exists, wildcard_ips = self._name_lookup(ws)
+        print()
         print('HAS WILDCARD:', wildcard_exists)
         if wildcard_exists:
             wildcard_ptrs = self._ptr_lookup_ips(wildcard_ips)
@@ -145,7 +177,6 @@ class DNSRecon:
             self._check_ptrs(wildcard_ptrs, ws)
 
             print('WARNING: We will ignore all records that match the wildcard. Some generic ones might be missing!')
-            print()
 
         return wildcard_exists, wildcard_ips
 
@@ -164,8 +195,6 @@ class DNSRecon:
 
                     retry += 1
                     continue
-
-
 
         except (NoAnswer, NXDOMAIN):
             ips['ip4'] = []
@@ -270,7 +299,6 @@ class DNSRecon:
         return ips
 
     def _check_ptrs(self, ptrs: dict, ptr_domain: str):
-        # todo: create cleaner approach for recursive ptr processing
         for ipp in ['ip4', 'ip6']:
             for d in ptrs[ipp]:
                 d = d[:-1]

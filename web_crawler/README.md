@@ -16,7 +16,7 @@ Requirements: `pip install -r requirements.txt`
 
 ```bash
 python3 web_crawler/main.py -h
-> usage: main.py [-h] -t TARGET [-f FOLLOW] [-l LOAD_TIME] [-r RECURSION_DEPTH]
+> usage: main.py [-h] -t TARGET [-f FOLLOW] [-l LOAD_TIME] [-r RECURSION_DEPTH] [-s SKIP]
 > 
 > options:
 >   -h, --help            show this help message and exit

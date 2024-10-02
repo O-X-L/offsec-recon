@@ -197,7 +197,7 @@ This script basically replaces [spoofable characters](https://en.wikipedia.org/w
 
 ```bash
 python3 dns/domain_spoof.py  -h
-> usage: domain_spoof.py [-h] -t TARGET [-a ASCII]
+> usage: domain_spoof.py [-h] -t TARGET [-a ASCII] [-q QUIET]
 > 
 > options:
 >   -h, --help            show this help message and exit
@@ -267,7 +267,7 @@ Dependencies: `apt install openssl grep`
 
 ```bash
 python3 dns/cert_sniff.py -h
-> usage: cert_sniff.py [-h] -t TARGET
+> usage: cert_sniff.py [-h] -t TARGET [-p PORT]
 > 
 > options:
 >   -h, --help            show this help message and exit

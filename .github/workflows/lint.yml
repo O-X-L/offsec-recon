@@ -37,7 +37,7 @@ jobs:
           pip install -r requirements_lint.txt
           pip install -r dns/requirements.txt
           pip install -r web_crawler/requirements.txt
-          pip install -r ips/requirements.txt
+          pip install -r ip/requirements.txt
           pip install -r email/requirements.txt
         shell: bash
 

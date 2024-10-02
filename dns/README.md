@@ -30,9 +30,9 @@ Useful online services are linked in the output. (*see example below*)
 
 ----
 
-## Enumeration
-
 Requirements: `pip install -r requirements.txt`
+
+## Domain Enumeration
 
 ### Usage
 
@@ -191,8 +191,6 @@ Note: If the target domain has a wildcard-record set, the DNS-lookup checks migh
 
 ## Generate Spoofing Domains
 
-Requirements: `pip install -r requirements.txt`
-
 This script basically replaces [spoofable characters](https://en.wikipedia.org/wiki/IDN_homograph_attack) in the provided domain name.
 
 ### Usage
@@ -261,7 +259,7 @@ In ASCII encoding (`-a 1`)
 
 ----
 
-## Sniff Domains and IPs from Services
+## Sniff Domains and IPs from Service-Certificates
 
 Dependencies: `apt install openssl grep`
 

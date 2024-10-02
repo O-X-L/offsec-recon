@@ -28,6 +28,10 @@ See: [README](https://github.com/O-X-L/offsec-recon/blob/main/dns/README.md)
 
 See: [README](https://github.com/O-X-L/offsec-recon/blob/main/ip/README.md)
 
+## E-Mail
+
+See: [README](https://github.com/O-X-L/offsec-recon/blob/main/email/README.md)
+
 ## Web Crawler - Quiet via PyAutoGUI
 
 See: [README](https://github.com/O-X-L/offsec-recon/blob/main/web_crawler/README.md)

@@ -13,9 +13,10 @@ from sys import exit as sys_exit
 
 from whois import whois
 from httpx import request, ReadTimeout, ConnectTimeout
+from validators import domain as valid_domain
 from dns.resolver import Resolver, NoAnswer, NXDOMAIN, LifetimeTimeout, NoNameservers
 from dns.exception import SyntaxError as DNSSyntaxError
-from validators import domain as valid_domain
+
 
 BASE_DIR = Path(__file__).parent.resolve()
 
@@ -336,8 +337,18 @@ class DNSRecon:
 
 
 if __name__ == '__main__':
+    # pylint: disable=R0801
+    print("""
+#####################################################
+USE YOUR POWERS TO SUPPORT THE GOOD SIDE OF HUMANITY!
+
+Made by: OXL IT Services (github.com/O-X-L)
+License: GPLv3
+#####################################################
+""")
+
     parser = ArgumentParser()
-    parser.add_argument('-t', '--target', help='Target domain or URL to scan', required=True, type=str)
+    parser.add_argument('-t', '--target', help='Target domain', required=True, type=str)
     parser.add_argument('-f', '--follow', help='Recursively follow unrelated domains', default=False, type=bool)
     parser.add_argument('-p', '--threads', help='Parallel threads to use', default=50, type=int)
     parser.add_argument('-w', '--wordlist', help='Wordlist to use', default=f'{BASE_DIR}/subdom-5k.txt', type=str)

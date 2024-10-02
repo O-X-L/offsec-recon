@@ -250,6 +250,16 @@ class WebCrawlerRecon:
 
 
 if __name__ == '__main__':
+    # pylint: disable=R0801
+    print("""
+#####################################################
+USE YOUR POWERS TO SUPPORT THE GOOD SIDE OF HUMANITY!
+
+Made by: OXL IT Services (github.com/O-X-L)
+License: GPLv3
+#####################################################
+""")
+
     parser = ArgumentParser()
     parser.add_argument('-t', '--target', help='Target domain or URL to scan', required=True)
     parser.add_argument('-f', '--follow', help='Domains or part of URLs to follow in recursive scan (comma-separated)', default='')

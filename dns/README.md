@@ -1,4 +1,4 @@
-# DNS / Domain Enumeration
+# DNS / Domain Recon
 
 We want to gather information about existing domains and the services behind them.
 
@@ -30,13 +30,15 @@ Useful online services are linked in the output. (*see example below*)
 
 ----
 
-## Usage
+## Enumeration
 
 Requirements: `pip install -r requirements.txt`
 
+### Usage
+
 ```bash
-python3 dns/main.py -h
-> usage: main.py [-h] -t TARGET [-f FOLLOW] [-p THREADS] [-w WORDLIST]
+python3 dns/domain_enum.py -h
+> usage: domain_enum.py [-h] -t TARGET [-f FOLLOW] [-p THREADS] [-w WORDLIST]
 > 
 > options:
 >   -h, --help            show this help message and exit
@@ -50,7 +52,7 @@ python3 dns/main.py -h
 >                         Wordlist to use
 
 # example:
-python3 dns/main.py google.com
+python3 dns/domain_enum.py google.com
 ```
 
 Filter results using `jq`:
@@ -68,9 +70,9 @@ cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uni
 
 ----
 
-## Output
+### Output
 
-### Whois
+#### Whois
 
 ```json
 {
@@ -96,7 +98,7 @@ cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uni
 }
 ```
 
-### Domains/IPs
+#### Domains/IPs
 
 Note: If the target domain has a wildcard-record set, the DNS-lookup checks might overlook some generic pages as we ignore any record that is pointing to the same IPs as the wildcard-record does.
 
@@ -185,3 +187,129 @@ Note: If the target domain has a wildcard-record set, the DNS-lookup checks migh
 }
 ```
 
+----
+
+## Generate Spoofing Domains
+
+Requirements: `pip install -r requirements.txt`
+
+This script basically replaces [spoofable characters](https://en.wikipedia.org/wiki/IDN_homograph_attack) in the provided domain name.
+
+### Usage
+
+```bash
+python3 dns/domain_spoof.py  -h
+> usage: domain_spoof.py [-h] -t TARGET [-a ASCII]
+> 
+> options:
+>   -h, --help            show this help message and exit
+>   -t TARGET, --target TARGET
+>                         Target domain
+>   -a ASCII, --ascii ASCII
+>                         Show spoofing domains in ASCII (show spoofed characters)
+>   -q QUIET, --quiet QUIET
+>                         Do not show banner
+
+python3 dns/domain_spoof.py -t oxl.com -a 1
+```
+
+### Output
+
+In UTF-8 encoding
+
+```json 
+{
+    "ox1.com": {
+        "registered": true
+    },
+    "oxI.com": {
+        "registered": true
+    },
+    "oxӀ.com": {
+        "registered": false
+    },
+    "оxl.com": {
+        "registered": false
+    },
+    "oхl.com": {
+        "registered": false
+    }
+}
+```
+
+In ASCII encoding (`-a 1`)
+
+```json
+{
+    "ox1.com": {
+        "registered": true
+    },
+    "oxI.com": {
+        "registered": true
+    },
+    "ox\u04c0.com": {
+        "registered": false
+    },
+    "\u043exl.com": {
+        "registered": false
+    },
+    "o\u0445l.com": {
+        "registered": false
+    }
+}
+```
+
+----
+
+## Sniff Domains and IPs from Services
+
+Dependencies: `apt install openssl grep`
+
+### Usage
+
+```bash
+python3 dns/cert_sniff.py -h
+> usage: cert_sniff.py [-h] -t TARGET
+> 
+> options:
+>   -h, --help            show this help message and exit
+>   -t TARGET, --target TARGET
+>                         Target domain
+>   -p PORT, --port PORT  Target port
+
+python3 dns/cert_sniff.py -t oxl.at
+```
+
+### Output
+
+```json
+{
+    "domains": [
+        "ansibleguy.net",
+        "global.oxl.at",
+        "global.preview.oxl.at",
+        "host-svc.com",
+        "o-x-l.at",
+        "o-x-l.co.at",
+        "o-x-l.com",
+        "o-x-l.net",
+        "o-x-l.org",
+        "oxl.app",
+        "oxl.at",
+        "oxl.co.at",
+        "preview.oxl.at",
+        "www.ansibleguy.net",
+        "www.global.oxl.at",
+        "www.host-svc.com",
+        "www.o-x-l.at",
+        "www.o-x-l.co.at",
+        "www.o-x-l.com",
+        "www.o-x-l.net",
+        "www.o-x-l.org",
+        "www.oxl.app",
+        "www.oxl.at",
+        "www.oxl.co.at"
+    ],
+    "ips": []
+}
+```

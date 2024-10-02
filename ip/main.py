@@ -128,6 +128,16 @@ class IPRecon:
 
 
 if __name__ == '__main__':
+    # pylint: disable=R0801
+    print("""
+#####################################################
+USE YOUR POWERS TO SUPPORT THE GOOD SIDE OF HUMANITY!
+
+Made by: OXL IT Services (github.com/O-X-L)
+License: GPLv3
+#####################################################
+""")
+
     parser = ArgumentParser()
     parser.add_argument('-i', '--iplist', help='IP-list to process', default=f'{BASE_DIR}/ips.txt', type=str)
     parser.add_argument('-o', '--out-name', help='Output file-name', default=f'{int(time())}', type=str)

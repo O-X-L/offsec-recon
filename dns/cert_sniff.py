@@ -15,31 +15,30 @@ from dns.resolver import Resolver, NoAnswer, NXDOMAIN
 NAMESERVERS = ['1.1.1.1']
 
 
-def _process(cmd: str, timeout_sec: int = None, shell: bool = False) -> str:
+def _process(cmd: str) -> str:
     try:
         with ProcessOpen(
             cmd,
-            shell=shell,
+            shell=True,
             stdout=PIPE,
         ) as p:
-            b_stdout, _ = p.communicate(timeout=timeout_sec)
-            stdout = b_stdout.decode('utf-8').strip()
+            b_stdout, _ = p.communicate(timeout=3)
+            return b_stdout.decode('utf-8').strip()
 
     except (TimeoutExpired, SubprocessError, CalledProcessError, OSError, IOError):
-        stdout = 'str(error)'
-
-    return stdout
+        return ''
 
 
-def get_web_cert_san(domain: str) -> (str, None):
-    return _process(
-        cmd=f"openssl s_client -connect {domain}:{PORT} -status </dev/null 2>/dev/null | "
-            "openssl x509 -noout -text | "
-            "grep 'Subject Alternative Name:' -A 1 | "
-            "grep 'DNS:'",
-        timeout_sec=3,
-        shell=True,
-    )
+def _get_web_cert_san(domain: str) -> str:
+    try:
+        return _process(
+            f"openssl s_client -connect {domain}:{PORT} -status </dev/null 2>/dev/null | "
+            "openssl x509 -noout -text 2>/dev/null | "
+            "grep 'Subject Alternative Name:' -A 1",
+        ).split('\n', 1)[1]
+
+    except IndexError:
+        return ''
 
 
 def main():
@@ -77,7 +76,7 @@ def main():
         pass
 
     for t in targets:
-        for san in get_web_cert_san(t).split(','):
+        for san in _get_web_cert_san(t).split(','):
             san = san.strip()
             try:
                 k, v = san.split(':', 1)

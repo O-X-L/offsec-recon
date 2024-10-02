@@ -18,6 +18,7 @@ OXL_IP_API = 'https://geoip.oxl.at/api/ip'
 SHODAN_IP_API = 'https://api.shodan.io/shodan/host'
 IPINFO_URL = 'https://ipinfo.io'
 
+
 class IPRecon:
     def __init__(self):
         self.results = {'ip4': {}, 'ip6': {}, 'asn': {}}

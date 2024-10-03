@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from itertools import product
 
 from validators import domain as valid_domain
-from dns.resolver import Resolver, NoAnswer, NXDOMAIN
+from dns.resolver import Resolver, NoAnswer, NXDOMAIN, NoNameservers
 
 NAMESERVERS = ['1.1.1.1']
 
@@ -44,6 +44,10 @@ HOMOGRAPH = [
 ]
 
 
+def _replace_char(src: str, idx: int, char: str) -> str:
+    return src[:idx] + char + src[idx + 1:]
+
+
 def _get_available_substitutions() -> list[dict]:
     # target idx => sub idx
     subs = []
@@ -54,15 +58,20 @@ def _get_available_substitutions() -> list[dict]:
 
         for idx_original in range(h_len):
             char_original = h[idx_original]
-            idx_char_original = TARGET_DOM.find(char_original)
+            s = TARGET_DOM
 
-            if idx_char_original == -1:
-                continue
+            while s.find(char_original) != -1:
+                idx_char_original = s.find(char_original)
 
-            subs.append({
-                'o': idx_char_original,
-                't': idx_translate,
-            })
+                if idx_char_original == -1:
+                    continue
+
+                subs.append({
+                    'o': idx_char_original,
+                    't': idx_translate,
+                })
+
+                s = _replace_char(src=s, idx=idx_char_original, char='_')
 
     return subs
 
@@ -71,7 +80,7 @@ def _build_options(subs: list[dict]) -> list:
     opt_cnt = 0
     subs_map = []
     for sub in subs:
-        t = HOMOGRAPH[sub['t']]
+        t = HOMOGRAPH[sub['t']].copy()
         t.remove(TARGET_DOM[sub['o']])
         opt_cnt += len(t) ** 2
         for tc in t:
@@ -91,9 +100,7 @@ def _build_options(subs: list[dict]) -> list:
             if not ov:
                 continue
 
-            idx_original = subs_map[oi]['o']
-            char_translate = subs_map[oi]['t']
-            spoofed = spoofed[:idx_original] + char_translate + spoofed[idx_original + 1:]
+            spoofed = _replace_char(src=spoofed, idx=subs_map[oi]['o'], char=subs_map[oi]['t'])
 
         spoofed = f'{spoofed}.{TARGET_TLD}'
 
@@ -117,8 +124,11 @@ def _check_if_registered(domains: list) -> dict:
 
             exists = True
 
-        except (NoAnswer, NXDOMAIN):
+        except NXDOMAIN:
             exists = False
+
+        except (NoNameservers, NoAnswer):
+            exists = 'unknown'
 
         spoofs[d] = {'registered': exists}
 

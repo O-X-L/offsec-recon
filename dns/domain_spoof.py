@@ -6,7 +6,7 @@
 
 from json import dumps as json_dumps
 from argparse import ArgumentParser
-from itertools import permutations
+from itertools import product
 
 from validators import domain as valid_domain
 from dns.resolver import Resolver, NoAnswer, NXDOMAIN
@@ -15,9 +15,8 @@ NAMESERVERS = ['1.1.1.1']
 
 # see: https://en.wikipedia.org/wiki/IDN_homograph_attack
 HOMOGRAPH = [
-    ['l', '1', 'I', 'Ӏ'],
+    ['I', 'Ӏ'],
     ['O', '0'],
-    ['m', 'rn'],
     ['a', 'а'],
     ['c', 'с'],
     ['e', 'е'],
@@ -44,52 +43,94 @@ HOMOGRAPH = [
     ['β', 'ß'],
 ]
 
-def main():
+
+def _get_available_substitutions() -> list[dict]:
+    # target idx => sub idx
+    subs = []
+
+    for idx_translate, h in enumerate(HOMOGRAPH):
+        h_len = len(h)
+        assert h_len == len(set(h))  # all chars inside a homograph list have to be unique
+
+        for idx_original in range(h_len):
+            char_original = h[idx_original]
+            idx_char_original = TARGET_DOM.find(char_original)
+
+            if idx_char_original == -1:
+                continue
+
+            subs.append({
+                'o': idx_char_original,
+                't': idx_translate,
+            })
+
+    return subs
+
+
+def _build_options(subs: list[dict]) -> list:
+    opt_cnt = 0
+    subs_map = []
+    for sub in subs:
+        t = HOMOGRAPH[sub['t']]
+        t.remove(TARGET_DOM[sub['o']])
+        opt_cnt += len(t) ** 2
+        for tc in t:
+            subs_map.append({'o': sub['o'], 't': tc})
+
+    if opt_cnt == 0:
+        return []
+
+    opts = []
+    for o in product([True, False], repeat=opt_cnt):
+        if max(o) == 0:
+            # no change
+            continue
+
+        spoofed = TARGET_DOM
+        for oi, ov in enumerate(o):
+            if not ov:
+                continue
+
+            idx_original = subs_map[oi]['o']
+            char_translate = subs_map[oi]['t']
+            spoofed = spoofed[:idx_original] + char_translate + spoofed[idx_original + 1:]
+
+        spoofed = f'{spoofed}.{TARGET_TLD}'
+
+        if not valid_domain(spoofed):
+            continue
+
+        opts.append(spoofed)
+
+    return opts
+
+
+def _check_if_registered(domains: list) -> dict:
     spoofs = {}
     dns = Resolver(configure=False)
     dns.nameservers = NAMESERVERS
 
-    # pylint: disable=C0200,R1702
-    for hl in HOMOGRAPH:
-        for i in range(len(hl)):
-            if hl[i] in TARGET_DOM:
-                for i2 in range(len(hl)):
-                    if i == i2:
-                        continue
+    for d in domains:
+        try:
+            if len(dns.resolve(d, 'NS')) == 0:
+                raise NoAnswer
 
-                    char_s = hl[i2]
+            exists = True
 
-                    # get indices of all characters to replace
-                    ri = []
-                    ris = TARGET_DOM
-                    while ris.find(hl[i]) != -1:
-                        char_idx = ris.find(hl[i])
-                        ri.append(char_idx)
-                        ris= ris[:char_idx] + '_' + ris[char_idx + 1:]
+        except (NoAnswer, NXDOMAIN):
+            exists = False
 
-                    for permutation_len in range(1, len(ri) + 1):
-                        for replace_idx in permutations(ri, permutation_len):
-                            s = TARGET_DOM
-                            for i3 in replace_idx:
-                                s = s[:i3] + char_s + s[i3+1:]
+        spoofs[d] = {'registered': exists}
 
-                            s = f'{s}.{TARGET_TLD}'
+    return spoofs
 
-                            if not valid_domain(s):
-                                continue
 
-                            try:
-                                if len(dns.resolve(s, 'NS')) == 0:
-                                    raise NoAnswer
-
-                                exists = True
-
-                            except (NoAnswer, NXDOMAIN):
-                                exists = False
-
-                            spoofs[s] = {'registered': exists}
-
-    print(json_dumps(spoofs, indent=4, ensure_ascii=ASCII))
+def main():
+    print(json_dumps(
+        _check_if_registered(_build_options(_get_available_substitutions())),
+        indent=4,
+        ensure_ascii=ASCII
+    ))
 
 
 if __name__ == '__main__':

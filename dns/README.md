@@ -217,13 +217,7 @@ In UTF-8 encoding
 
 ```json 
 {
-    "ox1.com": {
-        "registered": true
-    },
-    "oxI.com": {
-        "registered": true
-    },
-    "oxӀ.com": {
+    "охl.com": {
         "registered": false
     },
     "оxl.com": {
@@ -239,13 +233,7 @@ In ASCII encoding (`-a 1`)
 
 ```json
 {
-    "ox1.com": {
-        "registered": true
-    },
-    "oxI.com": {
-        "registered": true
-    },
-    "ox\u04c0.com": {
+    "\u043e\u0445l.com": {
         "registered": false
     },
     "\u043exl.com": {

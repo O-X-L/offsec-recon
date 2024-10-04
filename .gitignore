@@ -1,4 +1,4 @@
-dns/out/*.json
+dns/out/*/*.json
 web_crawler/cache/*/*.html
 web_crawler/out/*.json
 ip/out/*.json

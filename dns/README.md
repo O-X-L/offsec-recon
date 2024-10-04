@@ -106,8 +106,9 @@ Note: If the target domain has a wildcard-record set, the DNS-lookup checks migh
 {
     "oxl.at": {
         "shodan_url": "https://www.shodan.io/search?query=hostname%3Aoxl.at",
+        "shodan_url2": "https://www.shodan.io/domain/oxl.at",
         "censys_url": "https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=INCLUDE&q=oxl.at",
-        "google_site": "https://www.google.com/search?q=site%3Aoxl.at",
+        "google_url": "https://www.google.com/search?q=site%3Aoxl.at",
         "cert_search_url": "https://crt.sh/?q=oxl.at"
     },
     "*.oxl.at": {

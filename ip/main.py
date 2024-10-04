@@ -82,9 +82,13 @@ class IPRecon:
 
         if IPINFO_TOKEN != '':
             d['ipinfo'] = self._lookup_api_ipinfo(ip)
-            ipinfo_asn = d['ipinfo']['org'].split(' ', 1)[0]
-            if 'asn' not in data_oxl_asn or ipinfo_asn[2:] != str(data_oxl_asn['asn']):
-                d['ipinfo_url_asn'] = f"{IPINFO_URL}/{ipinfo_asn}"
+            try:
+                ipinfo_asn = d['ipinfo']['org'].split(' ', 1)[0]
+                if 'asn' not in data_oxl_asn or ipinfo_asn[2:] != str(data_oxl_asn['asn']):
+                    d['ipinfo_url_asn'] = f"{IPINFO_URL}/{ipinfo_asn}"
+
+            except KeyError:
+                pass
 
         if SHODAN_KEY != '':
             d['shodan'] = self._lookup_api_shodan(ip)

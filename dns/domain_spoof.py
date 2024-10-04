@@ -7,11 +7,13 @@
 from json import dumps as json_dumps
 from argparse import ArgumentParser
 from itertools import product
+from pathlib import Path
 
 from validators import domain as valid_domain
 from dns.resolver import Resolver, NoAnswer, NXDOMAIN, NoNameservers
 
 NAMESERVERS = ['1.1.1.1']
+BASE_DIR = Path(__file__).parent.resolve()
 
 # see: https://en.wikipedia.org/wiki/IDN_homograph_attack
 HOMOGRAPH = [
@@ -136,11 +138,23 @@ def _check_if_registered(domains: list) -> dict:
 
 
 def main():
-    print(json_dumps(
-        _check_if_registered(_build_options(_get_available_substitutions())),
-        indent=4,
-        ensure_ascii=ASCII
-    ))
+    d = _check_if_registered(_build_options(_get_available_substitutions()))
+
+    print(json_dumps(d, indent=4, ensure_ascii=ASCII))
+
+    print('SAVING INFORMATION')
+
+    out = BASE_DIR / 'out' / (TARGET_DOM.replace('.', '_') + '_' + TARGET_TLD)
+    out.mkdir(exist_ok=True)
+
+    with open(out / 'spoof.json', 'w', encoding='utf-8') as f:
+        f.write(
+            f'''
+{{
+"ascii": { json_dumps(d, indent=4, ensure_ascii=True) },
+"utf": { json_dumps(d, indent=4, ensure_ascii=False) }
+}}
+''')
 
 
 if __name__ == '__main__':

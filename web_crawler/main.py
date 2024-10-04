@@ -74,8 +74,7 @@ class WebCrawlerRecon:
     def __init__(self):
         self.results = {}
         cache_dir = Path(CACHE_DIR)
-        if not cache_dir.is_dir():
-            cache_dir.mkdir()
+        cache_dir.mkdir(exist_ok=True)
 
     def run(self):
         with ProcessOpen(

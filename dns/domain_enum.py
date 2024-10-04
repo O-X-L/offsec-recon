@@ -67,10 +67,13 @@ class DNSRecon:
     def _save_results(self):
         print('SAVING INFORMATION')
 
-        with open(f'{BASE_DIR}/out/results_{TARGET}.json', 'w', encoding='utf-8') as f:
+        out = BASE_DIR / 'out' / TARGET.replace('.', '_')
+        out.mkdir(exist_ok=True)
+
+        with open(out / 'enum.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
 
-        with open(f'{BASE_DIR}/out/whois_{TARGET}.json', 'w', encoding='utf-8') as f:
+        with open(out /'whois.json', 'w', encoding='utf-8') as f:
             try:
                 f.write(json_dumps(whois(TARGET), indent=4, default=str))
 
@@ -79,7 +82,7 @@ class DNSRecon:
 
     def _process_wordlist(self):
         print()
-        print('STARTING SUBDOMAIN PROBES')
+        print('STARTING SUBDOMAIN SCAN')
 
         with open(WORDLIST, 'r', encoding='utf-8') as f:
             wordlist = f.readlines()

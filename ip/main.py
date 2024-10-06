@@ -14,7 +14,7 @@ from httpx import request
 
 BASE_DIR = Path(__file__).parent.resolve()
 
-OXL_IP_API = 'https://geoip.oxl.at/api/ip'
+OXL_IP_API = 'https://geoip.oxl.app/api/ip'
 SHODAN_IP_API = 'https://api.shodan.io/shodan/host'
 IPINFO_URL = 'https://ipinfo.io'
 

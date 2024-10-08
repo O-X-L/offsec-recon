@@ -10,6 +10,7 @@ from time import sleep, time
 from json import dumps as json_dumps
 from argparse import ArgumentParser
 from sys import exit as sys_exit
+from json import JSONDecodeError
 
 from whois import whois
 from httpx import request, ReadTimeout, ConnectTimeout
@@ -156,7 +157,7 @@ class DNSRecon:
                 certs = request(method='get', url=f'https://crt.sh/?q={TARGET}&output=json', timeout=10).json()
                 break
 
-            except (ReadTimeout, ConnectTimeout):
+            except (ReadTimeout, ConnectTimeout, JSONDecodeError):
                 tries += 1
                 if tries >= 4:
                     print('ERROR: Certificate information could not be downloaded!')

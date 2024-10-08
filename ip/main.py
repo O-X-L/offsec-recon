@@ -77,6 +77,7 @@ class IPRecon:
         d = {
             'oxl_asn': data_oxl_asn,
             'ipinfo_url_ip': f"{IPINFO_URL}/{ip}",
+            'shodan_url': f'https://www.shodan.io/host/{ip}',
             'censys_url': f'https://search.censys.io/hosts/{ip}',
         }
 

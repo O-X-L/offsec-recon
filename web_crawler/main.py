@@ -101,7 +101,7 @@ class WebCrawlerRecon:
     def _save_results(self):
         print('SAVING INFORMATION')
 
-        with open(f'{BASE_DIR}/out/results_{safe_url_key(TARGET)}.json', 'w', encoding='utf-8') as f:
+        with open(f'{BASE_DIR}/out/{safe_url_key(TARGET)}.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
 
     @staticmethod

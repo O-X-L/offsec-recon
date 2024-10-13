@@ -51,6 +51,7 @@ class DNSRecon:
             'google_url': f'https://www.google.com/search?q=site%3A{TARGET}',
             'cert_search_url': f'https://crt.sh/?q={TARGET}',
             'dnsdumpster_url': f'https://dnsdumpster.com/?q={TARGET}',
+            'hostio_url': f'https://host.io/{TARGET}',
         }
         self._process_basic_records()
         self._process_certificate_search()
@@ -75,7 +76,7 @@ class DNSRecon:
         with open(out / 'enum.json', 'w', encoding='utf-8') as f:
             f.write(json_dumps(self.results, indent=4))
 
-        with open(out /'whois.json', 'w', encoding='utf-8') as f:
+        with open(out / 'whois.json', 'w', encoding='utf-8') as f:
             try:
                 f.write(json_dumps(whois(TARGET), indent=4, default=str))
 

@@ -59,13 +59,13 @@ Filter results using `jq`:
 
 ```bash
 # get a simple list of all domains
-cat dns/out/results_<DOMAIN>.json | jq 'keys | .[]'
+cat dns/out/<DOMAIN>/enum.json | jq 'keys | .[]'
 
 # get all unique IPv4 addresses
-cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ip | .ip4 | .[]' | sort | uniq
+cat dns/out/<DOMAIN>/enum.json | jq -r '.[] | try .ip | .ip4 | .[]' | sort | uniq
 
 # get all IPv4 PTRs
-cat dns/out/results_<DOMAIN>.json | jq -r '.[] | .ptr | .ip4 | .[]' | sort | uniq
+cat dns/out/<DOMAIN>/enum.json | jq -r '.[] | try .ptr | .ip4 | .[]' | sort | uniq
 ```
 
 ----

@@ -10,6 +10,7 @@ They are designed to be passive/quiet and utilize open-source information. (OSIN
 
 ## External Tools and Providers
 
+* [tools.oxl.app](https://tools.oxl.app/check/dns-enumeration)
 * [IPInfo](https://ipinfo.io)
 * [Shodan Internet Search-Engine](https://www.shodan.io/search)
 * [CenSys Internet Search-Engine](https://search.censys.io/search)

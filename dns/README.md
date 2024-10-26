@@ -34,6 +34,10 @@ Requirements: `pip install -r requirements.txt`
 
 ## Domain Enumeration
 
+### Web Demo
+
+[tools.oxl.app](https://tools.oxl.app/check/dns-enumeration)
+
 ### Usage
 
 ```bash
